@@ -1,5 +1,5 @@
 from glob import glob
-from os import listdir, makedirs
+from os import makedirs
 from shutil import copy
 
 
