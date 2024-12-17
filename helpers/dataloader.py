@@ -19,6 +19,13 @@ def load_dataset(dataset_image_paths: str, scale: tuple[int, int, int] = (256, 2
         elif species == "n02115641-dingo":               one_hot_encoded_species = array([0, 0, 1, 0, 0]) # noqa: E701
         elif species == "n02115913-dhole":               one_hot_encoded_species = array([0, 0, 0, 1, 0]) # noqa: E701
         elif species == "n02116738-African_hunting_dog": one_hot_encoded_species = array([0, 0, 0, 0, 1]) # noqa: E701
+
+        elif species == "n02111889-Samoyed":             one_hot_encoded_species = array([1, 0, 0, 0, 0]) # noqa: E701
+        elif species == "n02112137-chow":                one_hot_encoded_species = array([0, 1, 0, 0, 0]) # noqa: E701
+        elif species == "n02112350-keeshond":            one_hot_encoded_species = array([0, 0, 1, 0, 0]) # noqa: E701
+        elif species == "n02112706-Brabancon_griffon":   one_hot_encoded_species = array([0, 0, 0, 1, 0]) # noqa: E701
+        elif species == "n02113186-Cardigan":            one_hot_encoded_species = array([0, 0, 0, 0, 1]) # noqa: E701
+
         else:                                            one_hot_encoded_species = array([0, 0, 0, 0, 0]) # noqa: E701
         # fmt: on
 
