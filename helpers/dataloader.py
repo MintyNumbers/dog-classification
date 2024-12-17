@@ -1,11 +1,12 @@
 from glob import glob
 from os import listdir
 
-from cv2 import COLOR_BGR2RGB, IMREAD_COLOR, copyMakeBorder, cvtColor, imread, resize
-from numpy import array, ndarray
+from numpy import array, ndarray, pad
+from skimage.io import imread
+from skimage.transform import resize
 
 
-def load_dataset(dataset_image_paths: str, scale=(256, 256)) -> tuple[ndarray, ndarray]:
+def load_dataset(dataset_image_paths: str, scale: tuple[int, int, int] = (256, 256, 3)) -> tuple[ndarray, ndarray]:
     x = []
     y = []
 
@@ -24,45 +25,40 @@ def load_dataset(dataset_image_paths: str, scale=(256, 256)) -> tuple[ndarray, n
         image_paths: list[str] = glob(f"{dataset_image_paths}/{species}/*")
         image_paths.sort()
         for image_path in image_paths:
-            original_image = imread(image_path, flags=IMREAD_COLOR)  # BGR colors, HWC format
-            rgb_image = cvtColor(original_image, code=COLOR_BGR2RGB)  # RGB colors, HWC format
+            original_image: ndarray = imread(image_path)  # RGB colors, HWC format
 
-            # if image smaller than scale pad around all sidses
-            if rgb_image.shape[0] <= scale[0] and rgb_image.shape[1] <= scale[1]:
-                top_bottom_padding = (scale[0] - rgb_image.shape[0]) // 2
-                top_bottom_padding = (scale[1] - rgb_image.shape[1]) // 2
-                padded_image = copyMakeBorder(
-                    src=rgb_image,
-                    top=top_bottom_padding,
-                    bottom=top_bottom_padding,
-                    left=top_bottom_padding,
-                    right=top_bottom_padding,
-                    borderType=0,
+            # If image smaller than scale pad around all sides
+            if original_image.shape[0] <= scale[0] and original_image.shape[1] <= scale[1]:
+                top_bottom_padding = (scale[0] - original_image.shape[0]) // 2
+                left_right_padding = (scale[1] - original_image.shape[1]) // 2
+                padded_image = pad(
+                    array=original_image,
+                    pad_width=(
+                        (top_bottom_padding, top_bottom_padding),  # Height
+                        (left_right_padding, left_right_padding),  # Width
+                        (0, 0),  # Channel
+                    ),
+                    mode="constant",
                 )
-            # if image is too long, pad left and right to square, then resize
-            elif rgb_image.shape[0] > rgb_image.shape[1]:
-                top_bottom_padding = (rgb_image.shape[0] - rgb_image.shape[1]) // 2
-                padded_image = copyMakeBorder(
-                    src=rgb_image,
-                    top=0,
-                    bottom=0,
-                    left=top_bottom_padding,
-                    right=top_bottom_padding,
-                    borderType=0,
+            # If image is too long, pad left and right to square, then resize
+            elif original_image.shape[0] > original_image.shape[1]:
+                left_right_padding = (original_image.shape[0] - original_image.shape[1]) // 2
+                padded_image = pad(
+                    array=original_image,
+                    pad_width=((0, 0), (left_right_padding, left_right_padding), (0, 0)),  # HWC
+                    mode="constant",
                 )
-            # if image is too broad, pad top and bottom to square, then resize
-            elif rgb_image.shape[0] < rgb_image.shape[1]:
-                top_bottom_padding = (rgb_image.shape[1] - rgb_image.shape[0]) // 2
-                padded_image = copyMakeBorder(
-                    src=rgb_image,
-                    top=top_bottom_padding,
-                    bottom=top_bottom_padding,
-                    left=0,
-                    right=0,
-                    borderType=0,
+            # If image is too broad, pad top and bottom to square, then resize
+            elif original_image.shape[0] < original_image.shape[1]:
+                top_bottom_padding = (original_image.shape[1] - original_image.shape[0]) // 2
+                padded_image = pad(
+                    array=original_image,
+                    pad_width=((top_bottom_padding, top_bottom_padding), (0, 0), (0, 0)),  # HWC
+                    mode="constant",
                 )
 
-            resized_padded_image = resize(padded_image, scale)
+            resized_padded_image = resize(image=padded_image, output_shape=scale)
+
             x.append(resized_padded_image)
             y.append(one_hot_encoded_species)
 
