@@ -26,7 +26,7 @@ def load_dataset(dataset_image_paths: str, scale: tuple[int, int, int] = (256, 2
         elif species == "n02112706-Brabancon_griffon":   one_hot_encoded_species = array([0, 0, 0, 1, 0]) # noqa: E701
         elif species == "n02113186-Cardigan":            one_hot_encoded_species = array([0, 0, 0, 0, 1]) # noqa: E701
 
-        else:                                            one_hot_encoded_species = array([0, 0, 0, 0, 0]) # noqa: E701
+        else: continue # noqa: E701
         # fmt: on
 
         image_paths: list[str] = glob(f"{dataset_image_paths}/{species}/*")
