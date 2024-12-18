@@ -10,8 +10,8 @@ from numpy import argmax, ndarray
 from seaborn import heatmap
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import KFold
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC
+from sklearn.pipeline import Pipeline
+from sklearn.neighbors._classification import KNeighborsClassifier
 
 from helpers.cnn import init_new_model
 
@@ -21,7 +21,7 @@ def plot_confusion_matrix(
     y_train: ndarray,
     x_test: ndarray,
     y_test: ndarray,
-    model: Union[Sequential, SVC, KNeighborsClassifier],
+    model: Union[Sequential, Pipeline, KNeighborsClassifier],
     figure_suptitle: Optional[str] = None,
 ) -> None:
     f = plt.figure(figsize=(15, 5))
@@ -29,11 +29,15 @@ def plot_confusion_matrix(
         f.suptitle(figure_suptitle)
     for data_type, x, y in [("Train", x_train, y_train), ("Test", x_test, y_test)]:
         # Calculate Confusion Matrix
-        y_true = argmax(y, 1)
         if type(model) is Sequential:
+            y_true = argmax(y, 1)
             y_pred = argmax(model.predict(x, verbose=0), 1)
-        elif (type(model) is SVC) or (type(model) is KNeighborsClassifier):
+        elif (type(model) is Pipeline) or (type(model) is KNeighborsClassifier):
+            y_true = y
             y_pred = model.predict(x)
+        else:
+            print("Model type not supported")
+            return
 
         cm = confusion_matrix(y_true, y_pred)
 
