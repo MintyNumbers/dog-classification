@@ -14,21 +14,13 @@ def train_test_split() -> None:
             image_paths: list[str] = glob(f"./dataset/Images/{breed}/*")
             image_paths.sort()
 
-            # Prepare Annotations
-            makedirs(f"{train_dir}/Annotation/{breed}", exist_ok=False)
-            makedirs(f"{test_dir}/Annotation/{breed}", exist_ok=False)
-            annotation_paths: list[str] = glob(f"./dataset/Annotation/{breed}/*")
-            annotation_paths.sort()
-
             # Copy Images and Annotations to new directories
             for i in range(len(image_paths)):
                 if i < NUM_SAMPLES[0]:
                     if i < NUM_SAMPLES[1]:
                         copy(image_paths[i], f"{train_dir}/Images/{breed}/")
-                        copy(annotation_paths[i], f"{train_dir}/Annotation/{breed}/")
                     else:
                         copy(image_paths[i], f"{test_dir}/Images/{breed}/")
-                        copy(annotation_paths[i], f"{test_dir}/Annotation/{breed}")
                 else:
                     break
 
