@@ -29,6 +29,13 @@ def detect_hough_circles(image, hough_radii: np.ndarray, circle_number: int):
         return [0, 0, 0]  # No circles detected
 
 
+def detect_dog_shape(image):
+    # Load image and detect edges
+    image = rgb2gray(image)
+    edges = canny(image, sigma=2, low_threshold=10, high_threshold=100)
+    # No actual feature extraction as plots of the results were not promising
+
+
 def detect_fur(image):
     # detect edges
     image = rgb2gray(image)
