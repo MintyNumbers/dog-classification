@@ -1,5 +1,5 @@
 from os import makedirs
-from typing import Optional
+from typing import Optional, Union
 
 import matplotlib.pyplot as plt
 from keras.callbacks import History
@@ -10,6 +10,8 @@ from numpy import argmax, ndarray
 from seaborn import heatmap
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import KFold
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
 
 from helpers.cnn import init_new_model
 
@@ -19,7 +21,7 @@ def plot_confusion_matrix(
     y_train: ndarray,
     x_test: ndarray,
     y_test: ndarray,
-    model: Sequential,
+    model: Union[Sequential, SVC, KNeighborsClassifier],
     figure_suptitle: Optional[str] = None,
 ) -> None:
     f = plt.figure(figsize=(15, 5))
@@ -28,7 +30,11 @@ def plot_confusion_matrix(
     for data_type, x, y in [("Train", x_train, y_train), ("Test", x_test, y_test)]:
         # Calculate Confusion Matrix
         y_true = argmax(y, 1)
-        y_pred = argmax(model.predict(x, verbose=0), 1)
+        if type(model) is Sequential:
+            y_pred = argmax(model.predict(x, verbose=0), 1)
+        elif (type(model) is SVC) or (type(model) is KNeighborsClassifier):
+            y_pred = model.predict(x)
+
         cm = confusion_matrix(y_true, y_pred)
 
         # Visualize
