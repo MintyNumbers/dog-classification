@@ -8,6 +8,8 @@ from skimage.feature import canny, hog
 from skimage.io import imread
 from skimage.transform import hough_circle, hough_circle_peaks
 from skimage.util import img_as_ubyte
+from skimage.feature import hog
+from skimage.feature import corner_harris, corner_peaks
 
 
 def detect_hough_circles(image_path: str, hough_radii: ndarray, circle_number: int):
@@ -102,3 +104,39 @@ def my_hog(image_path, save_plot=True):
 
 
 """my_hog(image_path="../dataset/Images/n02115641-dingo/n02115641_1215.jpg")"""
+
+#my_hog(image_path="../dataset/Images/n02115641-dingo/n02115641_1215.jpg")
+
+def detect_corners(image_path, save_plot=True):
+    # Bild aus einer JPG-Datei laden
+    img = imread(image_path, as_gray=True)
+
+    # Corner Detection
+    coords = corner_peaks(corner_harris(img), min_distance=5, threshold_rel=0.10)
+
+    # Plot the corners
+    fig, ax = plt.subplots()
+    ax.imshow(img, cmap='gray')
+    ax.plot(
+        coords[:, 1], coords[:, 0], color='cyan', marker='o', linestyle='None', markersize=6
+    )
+    # Save plot
+    if save_plot:
+        image_name = image_path.split(sep="/")
+        output_dir = "../results/corner"
+        os.makedirs(output_dir, exist_ok=True)
+        plt.savefig(f"{output_dir}/{image_name[2]}-{image_name[3]}-{image_name[4]}.jpg")
+    else:
+        plt.show()
+
+#detect_corners(image_path="../dataset/Images/n02113799-standard_poodle/n02113799_1864.jpg",
+#             save_plot=False)
+#detect_corners(image_path="../dataset/Images/n02113978-Mexican_hairless/n02113978_386.jpg",
+#             save_plot=False)
+
+def average_color(image_path):
+    image = imread(image_path)
+    return image.mean()
+
+#print(average_color("../dataset/Images/n02113799-standard_poodle/n02113799_1864.jpg"))
+#print(average_color("../dataset/Images/n02113978-Mexican_hairless/n02113978_386.jpg"))
