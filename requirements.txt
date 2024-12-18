@@ -1,4 +1,5 @@
 matplotlib
+notebook
 numpy
 scikit-image
 scikit-learn

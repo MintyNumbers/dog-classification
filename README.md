@@ -25,8 +25,8 @@ Dieses Projekt implementiert zwei unterschiedliche Ansätze zur Klassifikation v
 
 ### Dependencies
 Das Projekt benötigt Python 3 mit folgenden Bibliotheken:
-- keras
 - matplotlib
+- notebook
 - numpy
 - scikit-image
 - scikit-learn
