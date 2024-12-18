@@ -1,11 +1,9 @@
-import os
-
 import numpy as np
-from skimage.feature import canny, corner_peaks, corner_harris, graycomatrix, graycoprops
-from skimage.filters import sobel, gabor
-from skimage.measure import shannon_entropy
-from skimage.transform import hough_circle, hough_circle_peaks, resize
 from skimage.color import rgb2gray
+from skimage.feature import canny, corner_harris, corner_peaks, graycomatrix, graycoprops
+from skimage.filters import gabor, sobel
+from skimage.measure import shannon_entropy
+from skimage.transform import hough_circle, hough_circle_peaks
 
 
 def detect_hough_circles(image, hough_radii: np.ndarray, circle_number: int):
@@ -17,14 +15,12 @@ def detect_hough_circles(image, hough_radii: np.ndarray, circle_number: int):
     hough_res = hough_circle(edges, hough_radii)
 
     # Select the most prominent circles
-    accums, cx, cy, radii = hough_circle_peaks(
-        hough_res, hough_radii, total_num_peaks=circle_number
-    )
+    accums, cx, cy, radii = hough_circle_peaks(hough_res, hough_radii, total_num_peaks=circle_number)
 
     # Feature vector: Mean and std deviation of radii, and number of detected circles
     if radii.size > 0:
         print(radii.mean(), radii.std())
-        return [radii.mean(), radii.std()] #, len(radii)]
+        return [radii.mean(), radii.std()]  # , len(radii)]
     else:
         return [0, 0, 0]  # No circles detected
 
@@ -32,7 +28,7 @@ def detect_hough_circles(image, hough_radii: np.ndarray, circle_number: int):
 def detect_dog_shape(image):
     # Load image and detect edges
     image = rgb2gray(image)
-    edges = canny(image, sigma=2, low_threshold=10, high_threshold=100)
+    edges = canny(image, sigma=2, low_threshold=10, high_threshold=100)  # noqa: F841
     # No actual feature extraction as plots of the results were not promising
 
 
@@ -59,15 +55,18 @@ def detect_corners(image):
 def average_color(image):
     return [image.mean()]
 
+
 def extract_features_histogram(image, bins=32):
     image = rgb2gray(image)
     hist, _ = np.histogram(image, bins=bins, range=(0, 1))  # Histogramm (normiert)
     return hist / hist.sum()  # Normalisierung
 
+
 def extract_image_entropy(image):
     image = rgb2gray(image)  # Falls Farbbild, konvertiere in Graustufen.
     entropy_value = shannon_entropy(image)  # Shannon-Entropie berechnen.
     return [entropy_value]  # Einzelnes Entropie-Feature zurückgeben.
+
 
 def extract_glcm_features(image):
     gray_image = rgb2gray(image)
@@ -88,6 +87,7 @@ def extract_glcm_features(image):
     entropy = -np.sum(glcm * np.log2(glcm + 1e-10))  # Entropie manuell berechnet
     return [contrast, homogeneity, energy, entropy]
 
+
 def extract_sobel_features(image):
     gray_image = rgb2gray(image)
     edges = sobel(gray_image)  # Sobel-Kantenfilter
@@ -97,13 +97,9 @@ def extract_sobel_features(image):
 
 
 def compute_glrl_matrix(image, levels=256, direction=(0, 1)):
-    gray_image = (rgb2gray(image) * (levels - 1)).astype(
-        int
-    )  # Normiere auf [0, levels - 1]
+    gray_image = (rgb2gray(image) * (levels - 1)).astype(int)  # Normiere auf [0, levels - 1]
     max_run_length = max(image.shape)  # Maximale mögliche Run-Länge (größte Dimension)
-    glrl = np.zeros(
-        (levels, max_run_length + 1), dtype=int
-    )  # Breite + 1 für Sicherheit
+    glrl = np.zeros((levels, max_run_length + 1), dtype=int)  # Breite + 1 für Sicherheit
 
     # Richtung (dx, dy) extrahieren
     dx, dy = direction
@@ -176,9 +172,7 @@ def haar_wavelet_transform(image):
     detail_rows = (image[:, 0:cols:2] - image[:, 1:cols:2]) / 2
 
     # Spalten-Transformation auf Ergebnis anwenden
-    LL = (
-        approx_rows[0:rows:2, :] + approx_rows[1:rows:2, :]
-    ) / 2  # Approximationsbereich
+    LL = (approx_rows[0:rows:2, :] + approx_rows[1:rows:2, :]) / 2  # Approximationsbereich
     LH = (approx_rows[0:rows:2, :] - approx_rows[1:rows:2, :]) / 2  # Horizontal-Details
     HL = (detail_rows[0:rows:2, :] + detail_rows[1:rows:2, :]) / 2  # Vertikal-Details
     HH = (detail_rows[0:rows:2, :] - detail_rows[1:rows:2, :]) / 2  # Diagonal-Details
@@ -192,9 +186,7 @@ def extract_wavelet_features_manual(image):
 
     # Iteriere über Stufen und extrahiere Merkmale
     for LL, LH, HL, HH in transformed:
-        wavelet_features.extend(
-            [np.mean(LL), np.std(LL)]
-        )  # Approximationskoeffizienten
+        wavelet_features.extend([np.mean(LL), np.std(LL)])  # Approximationskoeffizienten
         wavelet_features.extend([np.mean(LH), np.std(LH)])  # Horizontal
         wavelet_features.extend([np.mean(HL), np.std(HL)])  # Vertikal
         wavelet_features.extend([np.mean(HH), np.std(HH)])  # Diagonal
@@ -221,16 +213,16 @@ def extract_rgb_histogram(image, bins=32):
 
 def extract_features(image):
     fv = []
-    #fv.extend(detect_hough_circles(image, np.arrange(10, 80, 2), 10))
-    #fv.extend(detect_fur(image))
-    #fv.extend(detect_corners(image))
-    #fv.extend(average_color(image))
+    # fv.extend(detect_hough_circles(image, np.arrange(10, 80, 2), 10))
+    # fv.extend(detect_fur(image))
+    # fv.extend(detect_corners(image))
+    # fv.extend(average_color(image))
     fv.extend(extract_features_histogram(image))
     fv.extend(extract_image_entropy(image))
-    #fv.extend(extract_glcm_features(image))
-    #fv.extend(extract_sobel_features(image))
-    #fv.extend(compute_glrl_features(image))
-    #fv.extend(extract_gabor_features(image)) # Dauert ewig
-    #fv.extend(extract_wavelet_features_manual(image))
-    #fv.extend(extract_rgb_histogram(image))
+    # fv.extend(extract_glcm_features(image))
+    # fv.extend(extract_sobel_features(image))
+    # fv.extend(compute_glrl_features(image))
+    # fv.extend(extract_gabor_features(image)) # Dauert ewig
+    # fv.extend(extract_wavelet_features_manual(image))
+    # fv.extend(extract_rgb_histogram(image))
     return fv
